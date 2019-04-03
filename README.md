@@ -1,5 +1,15 @@
 # Fasttrack Code Test
 
+## To run API server
+
+CD to ./src/apiserver/ and exec: go run main.go helpers.go handlers.go data.go
+
+## To run CLI client
+
+CD to ./src/cli/ and exec: go install . And after that: ./bin/cli.exe answer --id=1
+
+There are 2 question sets with ID 1 and 2 for testing.
+
 ## Quiz
 
 The task is to build a super simple quiz with a few questions and a few alternatives for each question. With one correct answer.
