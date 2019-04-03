@@ -25,7 +25,7 @@ func QuestionsHandler(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// cache it for 5 mins on the client
+	// cache it for 5 mins. on the client side
 	response.Header().Set("Cache-Control", "max-age=300")
 	json.NewEncoder(response).Encode(Questions)
 
@@ -62,9 +62,10 @@ func AnswersHandler(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	// checking that all questions are answered and there are no "extra" answers
+
 	totalQuestions := len(Questions)
 
-	// checking all questions are answered and there are no "extra" answers
 	if totalQuestions != len(answers) {
 		ReturnStatusBadRequest(response, "Invalid amount of answers.")
 		return

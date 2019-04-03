@@ -17,14 +17,14 @@ var getquestionCmd = &cobra.Command{
 
 		questionReader, err := FetchQuestion(questionID)
 		if err != nil {
-			fmt.Println("Failed to fetch the question.")
+			os.Stderr.WriteString("Failed to fetch the question.")
 			os.Exit(1)
 		}
 		defer questionReader.Close()
 
 		respBody, err := ioutil.ReadAll(questionReader)
 		if err != nil {
-			fmt.Println("Error reading response.", err)
+			os.Stderr.WriteString("Error reading response. " + err.Error())
 			os.Exit(1)
 		}
 

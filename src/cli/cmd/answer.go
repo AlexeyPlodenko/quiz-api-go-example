@@ -40,9 +40,10 @@ var answerCmd = &cobra.Command{
 		questionID, _ := cmd.Flags().GetString("id")
 
 		// fetch the question from API
+		fmt.Println("Fetching questions from API...")
 		questionReader, err := FetchQuestion(questionID)
 		if err != nil {
-			fmt.Println(err)
+			os.Stderr.WriteString(err.Error())
 			os.Exit(1)
 		}
 		defer questionReader.Close()
@@ -51,7 +52,7 @@ var answerCmd = &cobra.Command{
 		var questions [3]Question
 		err = json.NewDecoder(questionReader).Decode(&questions)
 		if err != nil {
-			fmt.Println("Failed to parse question's JSON")
+			os.Stderr.WriteString("Failed to parse question's JSON")
 			os.Exit(1)
 		}
 
@@ -82,31 +83,31 @@ var answerCmd = &cobra.Command{
 			// validate user input
 			answerNum, err := strconv.Atoi(answer)
 			if err != nil {
-				fmt.Println("Answer must be a number")
+				os.Stderr.WriteString("Answer must be a number")
 				os.Exit(1)
 			}
 			if answerNum <= 0 || answerNum > answersLen {
 				answersLenStr := strconv.Itoa(answersLen)
-				fmt.Println("Answer must be in the range 1-" + answersLenStr)
+				os.Stderr.WriteString("Answer must be in the range 1-" + answersLenStr)
 				os.Exit(1)
 			}
 
 			answers[i] = Answer{
-				AnswerID: answerNum,
+				AnswerID: answerNum - 1, // decrementing to match with server side ID
 			}
 		}
 
 		// sending our answers and outputting results to the CLI
 		answersResultReader, err := sendAnswer(questionID, answers)
 		if err != nil {
-			fmt.Println("Failed to send answers.", err)
+			os.Stderr.WriteString("Failed to send answers. " + err.Error())
 			os.Exit(1)
 		}
 		defer answersResultReader.Close()
 
 		respBody, err := ioutil.ReadAll(answersResultReader)
 		if err != nil {
-			fmt.Println("Error reading response.", err)
+			os.Stderr.WriteString("Error reading response. " + err.Error())
 			os.Exit(1)
 		}
 
@@ -118,13 +119,11 @@ var answerCmd = &cobra.Command{
 func sendAnswer(questionID string, answers Answers) (io.ReadCloser, error) {
 	answersJSON, err := json.Marshal(answers)
 	if err != nil {
-		fmt.Println("Failed to JSON encode our answers.", err)
+		os.Stderr.WriteString("Failed to JSON encode our answers. " + err.Error())
 		os.Exit(1)
 	}
-	// json.NewEncoder(response).Encode(&answers)
 
 	answerURL := apiStartURL + "/questions/" + questionID + "/answers"
-	fmt.Println(answerURL)
 	resp, err := http.Post(answerURL, "application/json", bytes.NewBuffer(answersJSON))
 	if err != nil {
 		return nil, err
