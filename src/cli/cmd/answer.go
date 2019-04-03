@@ -31,8 +31,11 @@ type Answers [3]Answer
 // answerCmd represents the answer command
 var answerCmd = &cobra.Command{
 	Use:   "answer",
-	Short: "Answer questions",
-	Long:  "Answer questions...",
+	Short: "Answer question",
+	Long: `Answer question from API server.
+
+	Use it like that: cli.exe answer --id=2 , where --id is an ID of the question.`,
+
 	Run: func(cmd *cobra.Command, args []string) {
 		// @TODO split into functions
 
@@ -40,7 +43,7 @@ var answerCmd = &cobra.Command{
 		questionID, _ := cmd.Flags().GetString("id")
 
 		// fetch the question from API
-		fmt.Println("Fetching questions from API...")
+		fmt.Print("Fetching questions from API...\n\n")
 		questionReader, err := FetchQuestion(questionID)
 		if err != nil {
 			os.Stderr.WriteString(err.Error())
@@ -61,6 +64,8 @@ var answerCmd = &cobra.Command{
 		var answer string
 		var answers [3]Answer
 
+		fmt.Print("The quiz starts now!\n\n")
+
 		// lets try strings.Builder for string concat.
 		var questionStr strings.Builder
 		for i, question := range questions {
@@ -79,6 +84,7 @@ var answerCmd = &cobra.Command{
 
 			// read user input
 			fmt.Scanln(&answer)
+			fmt.Print("\n")
 
 			// validate user input
 			answerNum, err := strconv.Atoi(answer)
@@ -97,6 +103,8 @@ var answerCmd = &cobra.Command{
 			}
 		}
 
+		fmt.Print("Sending your answers to server...\n\n")
+
 		// sending our answers and outputting results to the CLI
 		answersResultReader, err := sendAnswer(questionID, answers)
 		if err != nil {
@@ -111,7 +119,7 @@ var answerCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fmt.Println("Response:\n", string(respBody))
+		fmt.Println("Your results:", string(respBody))
 	},
 }
 
