@@ -1,7 +1,6 @@
 package main
 
 // @TODO caching of questions
-// @TODO fix "better" logic
 
 import (
 	"github.com/gorilla/mux"

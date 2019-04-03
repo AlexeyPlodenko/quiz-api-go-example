@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"math"
@@ -79,12 +80,13 @@ func AnswersHandler(response http.ResponseWriter, request *http.Request) {
 		}
 	}
 
+	// respond with user's result
+	userIsBetterThanOthers := getUserIsBetterThanOthersPerc(correctAnswers, totalQuestions)
+
 	// update general statistics
 	UsersAnsweredCorrectly[correctAnswers]++
 	TotalAnsweredUsers++
 
-	// respond with user's result
-	userIsBetterThanOthers := getUserIsBetterThanOthersPerc(correctAnswers)
 	res := struct {
 		CorrectAnswers    int    `json:"correctAnswers"`
 		ComparingToOthers string `json:"comparingToOthers"`
@@ -98,17 +100,30 @@ func AnswersHandler(response http.ResponseWriter, request *http.Request) {
 }
 
 // Returns by how many percentage current user has answered better than the rest
-func getUserIsBetterThanOthersPerc(correctAnswers int) int {
+func getUserIsBetterThanOthersPerc(correctAnswers int, totalQuestions int) int {
+	if correctAnswers == 0 {
+		// no correct answers, we are the worst :(
+
+		return 0
+	}
+	if correctAnswers == totalQuestions || TotalAnsweredUsers == 0 {
+		// answered all questions or nobody yet answered and we have
+		// at least 1 correct answer, we are the best
+
+		return 100
+	}
+
+	// calculating percentage
 	usersAnsweredWorse := 0
-	for i := 0; i < correctAnswers; i++ {
+	for i := 0; i <= correctAnswers; i++ {
 		usersAnsweredWorse += UsersAnsweredCorrectly[i]
 	}
 
-	var res int
-	if TotalAnsweredUsers > 0 {
-		res = int(math.Ceil(float64(usersAnsweredWorse) / float64(TotalAnsweredUsers) * 100.0))
-	} else {
-		res = 100
+	if usersAnsweredWorse == 0 {
+		// nobody is worse than us, we are the worst again :(
+
+		return 0
 	}
-	return res
+
+	return int(math.Ceil(float64(usersAnsweredWorse) / float64(TotalAnsweredUsers) * 100.0))
 }
