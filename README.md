@@ -1,4 +1,4 @@
-# Fasttrack Code Test
+# A quiz API server and CLI client in Golang
 
 ## To run API server
 
